@@ -62,7 +62,6 @@ int server_send_chunk(server_t* s, char* chunk, int bytes) {
 }
 
 int server_sync_file(server_t* s) {
-
   FILE *new_fd;
   size_t bytes_read;
   int block_index = 0;
@@ -81,7 +80,8 @@ int server_sync_file(server_t* s) {
     bzero(block, s->block_size);
     bytes_read = fread(block, 1, s->block_size, new_fd);
 
-    // Si lei menos bytes que el block_size, los agrego al chunk y corto el ciclo
+    // Si lei menos bytes que el block_size, los agrego al chunk y corto el
+    // ciclo
     if (bytes_read < s->block_size) {
       strncat(chunk, block, bytes_read);
       chunk_size += bytes_read;

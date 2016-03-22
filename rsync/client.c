@@ -52,7 +52,8 @@ int client_send_checksums(client_t* c) {
   old_file = fopen(c->old_local_file, "rb");
   if (!old_file) return -1;  // TODO: manage error
   char* buffer = malloc(c->block_size);
-  while ((bytes_read = fread(buffer, 1, c->block_size, old_file)) >= c->block_size) {
+  while ((bytes_read = fread(buffer, 1, c->block_size, old_file))
+                                                >= c->block_size) {
     int cs = checksum(buffer, c->block_size);
     cs = htonl(cs);
     flag = P_CHECKSUM_START;
@@ -83,9 +84,7 @@ int client_sync_file(client_t* c) {
   socket_read(&(c->skt), &flag, 1);
 
   while (flag != P_END_OF_FILE) {
-
     if (flag == P_NEW_FILE_CHUNK) {
-
       socket_read(&(c->skt), (char*) &bytes_to_write, 4);
       bytes_to_write = ntohl(bytes_to_write);
       printf("RECV File chunk %d bytes\n", bytes_to_write);
@@ -98,7 +97,6 @@ int client_sync_file(client_t* c) {
       free(chunk);
 
     } else if (flag == P_BLOCK_FOUND) {
-
       socket_read(&(c->skt), (char*) &block_index, 4);
       block_index = ntohl(block_index);
       printf("RECV Block index %d\n", block_index);
@@ -110,14 +108,11 @@ int client_sync_file(client_t* c) {
 
       free(chunk);
 
-
     } else {
       return -1;  // Incorrect flag
     }
 
     socket_read(&(c->skt), &flag, 1);
-    printf("Recibo flag %d\n", flag);
-
   }
 
   printf("RECV End of file\n");

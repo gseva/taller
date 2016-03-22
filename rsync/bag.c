@@ -33,23 +33,9 @@ int bag_search(bag_t* b, int item) {
   return -1;
 }
 
-int bag_remove(bag_t* b) {
-//   if (b->current == b->initial) {
-//     b->initial = b->current = NULL;
-//   }
-//   else if (b->current->next) {
-//     b->current->next->previous = b->current->previous;
-//     b->current = b->current->next;
-//   } else {
-//     b->current = b->current->previous;
-//     b->current->next = NULL;
-//   }
-  return 0;
-}
-
 int bag_destroy(bag_t* b) {
   b->current = b->initial;
-  while(b->current->next) {
+  while (b->current->next) {
     bag_node_t* temp = b->current->next;
     free(b->current);
     b->current = temp;

@@ -18,6 +18,6 @@ int bag_add(bag_t* b, int item);
 
 int bag_search(bag_t* b, int item);
 
-int bag_destroy(bag_t*);
+int bag_destroy(bag_t* b);
 
 #endif
