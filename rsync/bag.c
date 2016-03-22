@@ -40,5 +40,6 @@ int bag_destroy(bag_t* b) {
     free(b->current);
     b->current = temp;
   }
+  free(b->current);
   return 0;
 }

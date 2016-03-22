@@ -101,7 +101,7 @@ int client_sync_file(client_t* c) {
       block_index = ntohl(block_index);
       printf("RECV Block index %d\n", block_index);
 
-      chunk = malloc(block_index);
+      chunk = malloc(c->block_size + 1);
       fseek(old_file, c->block_size * block_index, SEEK_SET);
       fread(chunk, 1, c->block_size, old_file);
       fwrite(chunk, 1, c->block_size, new_file);

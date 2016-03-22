@@ -56,7 +56,9 @@ int socket_connect(socket_t* s, const char* hostname, int port) {
        server->h_length);
   serv_addr.sin_port = htons(port);
 
-  return connect(s->fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+  connect(s->fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+
+  freehostname(server);
 }
 
 

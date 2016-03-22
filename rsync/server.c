@@ -40,7 +40,7 @@ int server_receive_block_size(server_t* s) {
 }
 
 int server_receive_checksums(server_t* s) {
-  char flag;
+  char flag = 0;
   int checksum;
   do
   {
@@ -66,18 +66,18 @@ int server_sync_file(server_t* s) {
   size_t bytes_read;
   int block_index = 0;
   int chunk_size = 0;
-  char flag;
+  char flag = 0;
   char chunk[256];
 
 
   new_fd = fopen(s->new_file, "rb");
   if (!new_fd) return -1;
 
-  char* block = malloc(s->block_size);
+  char* block = malloc(s->block_size + 1);
   bzero(chunk, 256);
 
   while (!feof(new_fd)) {
-    bzero(block, s->block_size);
+    bzero(block, s->block_size + 1);
     bytes_read = fread(block, 1, s->block_size, new_fd);
 
     // Si lei menos bytes que el block_size, los agrego al chunk y corto el
