@@ -49,15 +49,12 @@ int client_send_checksums(client_t* c) {
   size_t bytes_read;
   char flag;
 
-  printf("Trato de abrir %s\n", c->old_local_file);
   old_file = fopen(c->old_local_file, "rb");
   if (!old_file) return -1;  // TODO: manage error
-  printf("Abri %s\n",  c->old_local_file);
   char* buffer = malloc(c->block_size);
   while ((bytes_read = fread(buffer, 1, c->block_size, old_file)) >= c->block_size) {
-    printf("Leo %s\n", buffer);
-    int cs = htonl(checksum(buffer, c->block_size));
-    printf("Envio checksum: %d\n", cs);
+    int cs = checksum(buffer, c->block_size);
+    cs = htonl(cs);
     flag = P_CHECKSUM_START;
     socket_write(&(c->skt), &flag, 1);
 
@@ -74,7 +71,8 @@ int client_send_checksums(client_t* c) {
 
 int client_sync_file(client_t* c) {
   char flag;
-  int bytes_to_write, ;
+  char* chunk;
+  int bytes_to_write, block_index;
   FILE *old_file, *new_file;
 
   old_file = fopen(c->old_local_file, "rb");
@@ -82,28 +80,52 @@ int client_sync_file(client_t* c) {
   new_file = fopen(c->new_local_file, "wb");
   if (!new_file) return -1;
 
-  socket_read(&(c->c_skt), &flag, 1);
+  socket_read(&(c->skt), &flag, 1);
+
   while (flag != P_END_OF_FILE) {
 
     if (flag == P_NEW_FILE_CHUNK) {
 
-      socket_read((&(c->c_skt), (char*) &bytes_to_write, 4);
+      socket_read(&(c->skt), (char*) &bytes_to_write, 4);
+      bytes_to_write = ntohl(bytes_to_write);
+      printf("RECV File chunk %d bytes\n", bytes_to_write);
+
+      chunk = malloc(bytes_to_write);
+      socket_read(&(c->skt), chunk, bytes_to_write);
+
+      fwrite(chunk, 1, bytes_to_write, new_file);
+
+      free(chunk);
 
     } else if (flag == P_BLOCK_FOUND) {
+
+      socket_read(&(c->skt), (char*) &block_index, 4);
+      block_index = ntohl(block_index);
+      printf("RECV Block index %d\n", block_index);
+
+      chunk = malloc(block_index);
+      fseek(old_file, c->block_size * block_index, SEEK_SET);
+      fread(chunk, 1, c->block_size, old_file);
+      fwrite(chunk, 1, c->block_size, new_file);
+
+      free(chunk);
+
 
     } else {
       return -1;  // Incorrect flag
     }
 
-    socket_read(&(c->c_skt), &flag, 1);
+    socket_read(&(c->skt), &flag, 1);
+    printf("Recibo flag %d\n", flag);
 
   }
 
   printf("RECV End of file\n");
 
   fclose(old_file);
-  fclose(new_file)
+  fclose(new_file);
 
+  return 0;
 }
 
 

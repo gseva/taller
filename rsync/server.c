@@ -20,14 +20,13 @@ int server_receive_filename(server_t* s) {
   int ret;
   char *data = (char*) &ret;
   socket_read(&(s->c_skt), data, 4);
-  printf("El tamaño es %d\n", ret);
 
   ret = ntohl(ret);
-  printf("El tamaño host es %d\n", ret);
-  s->new_file = malloc(ret);
-  socket_read(&(s->c_skt), s->new_file, ret);
 
-  printf("Recibo filename: %s\n", s->new_file);
+  s->new_file = malloc(ret + 1);
+  socket_read(&(s->c_skt), s->new_file, ret);
+  s->new_file[ret] = '\0';
+
   return 0;
 }
 
@@ -37,7 +36,6 @@ int server_receive_block_size(server_t* s) {
   socket_read(&(s->c_skt), data, 4);
 
   s->block_size = ntohl(block_size);
-  printf("Mi block size es: %d\n", s->block_size);
   return 0;
 }
 
@@ -47,7 +45,6 @@ int server_receive_checksums(server_t* s) {
   do
   {
     socket_read(&(s->c_skt), &flag, 1);
-    printf("Recibo flag %d\n", flag);
     if (flag == P_CHECKSUM_START) {
       socket_read(&(s->c_skt), (char*) &checksum, 4);
       bag_add(&(s->checksums), ntohl(checksum));
@@ -58,28 +55,31 @@ int server_receive_checksums(server_t* s) {
 
 int server_send_chunk(server_t* s, char* chunk, int bytes) {
   char flag = P_NEW_FILE_CHUNK;
-  socket_write(&(s->skt), &flag, 1);
+  socket_write(&(s->c_skt), &flag, 1);
   bytes = htonl(bytes);
-  socket_write(&(s->skt), (char*) &bytes, 4);
-  return socket_write(&(s->skt), chunk, bytes);
+  socket_write(&(s->c_skt), (char*) &bytes, 4);
+  return socket_write(&(s->c_skt), chunk, ntohl(bytes));
 }
 
 int server_sync_file(server_t* s) {
-  FILE *new_file;
+
+  FILE *new_fd;
   size_t bytes_read;
   int block_index = 0;
   int chunk_size = 0;
   char flag;
   char chunk[256];
 
-  new_file = fopen(s->new_file, "rb");
-  if (!new_file) return -1;
+
+  new_fd = fopen(s->new_file, "rb");
+  if (!new_fd) return -1;
 
   char* block = malloc(s->block_size);
   bzero(chunk, 256);
 
-  while (!feof(new_file)) {
-    bytes_read = fread(block, 1, s->block_size, new_file);
+  while (!feof(new_fd)) {
+    bzero(block, s->block_size);
+    bytes_read = fread(block, 1, s->block_size, new_fd);
 
     // Si lei menos bytes que el block_size, los agrego al chunk y corto el ciclo
     if (bytes_read < s->block_size) {
@@ -90,7 +90,7 @@ int server_sync_file(server_t* s) {
 
     int cs = checksum(block, s->block_size);
 
-    if ((block_index = bag_search(&(s->checksums), cs)) > 0) {
+    if ((block_index = bag_search(&(s->checksums), cs)) >= 0) {
       // Si encuentro un checksum, primero tengo que vaciar el chunk que tengo
       if (chunk_size > 0) {
         server_send_chunk(s, chunk, chunk_size);
@@ -100,14 +100,15 @@ int server_sync_file(server_t* s) {
       // Luego envio el numero de bloque encontrado
       // Estoy confiando en que el cliente me mando los checksums en orden
       flag = P_BLOCK_FOUND;
-      socket_write(&(s->skt), &flag, 1);
+      socket_write(&(s->c_skt), &flag, 1);
+
       block_index = htonl(block_index);
-      socket_write(&(s->skt), (char*) &block_index, 4);
+      socket_write(&(s->c_skt), (char*) &block_index, 4);
     } else {
       // Si no encuentro checksum, agrego el primer byte del bloque al chunk
       // y muevo el puntero del archivo (1 - el tamaño del bloque).
       strncat(chunk, block, 1);
-      fseek(new_file, 1 - s->block_size, SEEK_CUR);
+      fseek(new_fd, 1 - s->block_size, SEEK_CUR);
       chunk_size++;
     }
   }
@@ -115,7 +116,10 @@ int server_sync_file(server_t* s) {
   if (chunk_size > 0) {
     server_send_chunk(s, chunk, chunk_size);
   }
+  flag = P_END_OF_FILE;
+  socket_write(&(s->c_skt), &flag, 1);
 
+  fclose(new_fd);
   free(block);
   return 0;
 }

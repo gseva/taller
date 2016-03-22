@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <stdio.h> //sacar
 
 #include "socket.h"
 
@@ -65,6 +66,7 @@ int socket_read(socket_t* s, char* buff, size_t bytes) {
   {
     // There are no MSG_NOSIGNAL on OS X, so i pass no flags
     int i = recv(s->fd, buff, length, 0);
+    printf("leo %d\n", i);
     if (i < 1) return i;
     buff += i;
     length -= i;
@@ -79,6 +81,8 @@ int socket_write(socket_t* s, char* buff, size_t bytes) {
   {
     // There are no MSG_NOSIGNAL on OS X, so i pass no flags
     int i = send(s->fd, buff, length, 0);
+    printf("Mando %s\n", buff);
+    printf("Mando %d\n", i);
     if (i < 1) return i;
     buff += i;
     length -= i;
