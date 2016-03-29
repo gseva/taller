@@ -20,7 +20,7 @@ int main(int argc, char const *argv[])
   } else if (!strncmp(argv[1], "client", 6)) {
     client_t c;
     // hostname port old_local new_local new_remote block_size
-    client_create(&c, argv[2], atoi(argv[3]), argv[4],
+    client_create(&c, argv[2], argv[3], argv[4],
                       argv[5], argv[6], atoi(argv[7]));
     client_run(&c);
     client_destroy(&c);

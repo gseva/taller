@@ -1,7 +1,5 @@
 
-#include <strings.h>
-#include <stdlib.h>
-
+#include "common.h"
 #include "server.h"
 #include "protocol.h"
 

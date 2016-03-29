@@ -1,15 +1,10 @@
 
-#include <strings.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
-
+#include "common.h"
 #include "client.h"
 #include "protocol.h"
 
 
-int client_create(client_t* c, const char* hostname, int port,
+int client_create(client_t* c, const char* hostname, const char* port,
                   const char* old_local_file, const char* new_local_file,
                   const char* remote_file, int block_size) {
   socket_t skt;
@@ -103,8 +98,11 @@ int client_sync_file(client_t* c) {
 
       chunk = malloc(c->block_size + 1);
       fseek(old_file, c->block_size * block_index, SEEK_SET);
-      fread(chunk, 1, c->block_size, old_file);
-      fwrite(chunk, 1, c->block_size, new_file);
+      if (fread(chunk, 1, c->block_size, old_file)) {
+        fwrite(chunk, 1, c->block_size, new_file);
+      } else {
+        return -1;
+      }
 
       free(chunk);
 

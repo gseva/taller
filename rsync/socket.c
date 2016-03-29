@@ -1,15 +1,20 @@
 
-#include <strings.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <stdio.h> //sacar
-
+#include "common.h"
 #include "socket.h"
 
 
+// Sin este define el SERCOM no compila.
+// http://stackoverflow.com/questions/11405819/does-struct-hostent-have-a-field-h-addr
+#define h_addr h_addr_list[0] /* for backward compatibility */
+
 #define NUM_CLIENTS 5
+
+#ifndef MSG_NOSIGNAL
+// En Os X no existe el MSG_NOSIGNAL, entonces lo uso sin flags.
+#define SOCKET_FLAGS 0
+#else
+#define SOCKET_FLAGS MSG_NOSIGNAL
+#endif
 
 
 int socket_create(socket_t* s) {
@@ -41,8 +46,35 @@ socket_t socket_accept(socket_t* s) {
   return cli_socket;
 }
 
+// Por algun extraño motivo SERCOM no entiende el getaddrinfo (tira error
+// de compilacion) - entonces no puedo usar esta versión del connect.
 
-int socket_connect(socket_t* s, const char* hostname, int port) {
+// int socket_connect(socket_t* s, const char* hostname, const char* port) {
+//   struct addrinfo hints, *servinfo, *p;
+
+//   memset(&hints, 0, sizeof(hints));
+//   hints.ai_family = AF_UNSPEC;
+//   hints.ai_socktype = SOCK_STREAM;
+
+//   getaddrinfo(hostname, port, &hints, &servinfo);
+
+//   for (p = servinfo; p != NULL; p = p->ai_next) {
+//     if (connect(s->fd, p->ai_addr, p->ai_addrlen) != -1) {
+//       break;
+//     }
+//   }
+
+//   freeaddrinfo(servinfo);
+//   return 0;
+// }
+
+
+
+// Ambas versiones de socket_connect pierden memoria en OS X según el valgrind.
+// Parece ser un feature y no un bug:
+// http://stackoverflow.com/questions/13229913/getaddrinfo-memory-leak
+
+int socket_connect(socket_t* s, const char* hostname, const char* port) {
   struct hostent *server;
   struct sockaddr_in serv_addr;
 
@@ -54,11 +86,9 @@ int socket_connect(socket_t* s, const char* hostname, int port) {
   bcopy((char *)server->h_addr,
        (char *)&serv_addr.sin_addr.s_addr,
        server->h_length);
-  serv_addr.sin_port = htons(port);
+  serv_addr.sin_port = htons(atoi(port));
 
-  connect(s->fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
-
-  freehostname(server);
+  return connect(s->fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
 }
 
 
@@ -66,8 +96,7 @@ int socket_read(socket_t* s, char* buff, size_t bytes) {
   int length = bytes;
   while (length > 0)
   {
-    // There are no MSG_NOSIGNAL on OS X, so i pass no flags
-    int i = recv(s->fd, buff, length, 0);
+    int i = recv(s->fd, buff, length, SOCKET_FLAGS);
     if (i < 1) return i;
     buff += i;
     length -= i;
@@ -80,8 +109,7 @@ int socket_write(socket_t* s, char* buff, size_t bytes) {
   int length = bytes;
   while (length > 0)
   {
-    // There are no MSG_NOSIGNAL on OS X, so i pass no flags
-    int i = send(s->fd, buff, length, 0);
+    int i = send(s->fd, buff, length, SOCKET_FLAGS);
     if (i < 1) return i;
     buff += i;
     length -= i;
