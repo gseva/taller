@@ -41,6 +41,18 @@ public:
     return createExpression<SumExpression>();
   }
 
+  DiffExpression* createDiff() {
+    return createExpression<DiffExpression>();
+  }
+
+  MulExpression* createMul() {
+    return createExpression<MulExpression>();
+  }
+
+  DivExpression* createDiv() {
+    return createExpression<DivExpression>();
+  }
+
 
 };
 

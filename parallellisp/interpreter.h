@@ -11,7 +11,7 @@ class Reader {
 
 public:
   string nextLine() {
-    return "(print (sum 2 3))";
+    return "(print (/ 100 (+ 2 3) (* 1 2)) (+ 1 (- 1 1)))";
   }
 
 };

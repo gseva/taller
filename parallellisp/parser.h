@@ -17,6 +17,22 @@ private:
     return (s[0] == '(' && s[s.size() - 1] == ')');
   }
 
+  Expression* getExpressionInstance_(string name) {
+    if (name == "print") {
+      return expFact_.createPrint();
+    } else if (name == "+") {
+      return expFact_.createSum();
+    } else if (name == "-") {
+      return expFact_.createDiff();
+    } else if (name == "*") {
+      return expFact_.createMul();
+    } else if (name == "/") {
+      return expFact_.createDiv();
+    } else {
+      return NULL;
+    }
+  }
+
   Expression* parseExpression_(const string s) {
     if (!isExpression_(s)) return NULL;
 
@@ -27,27 +43,26 @@ private:
     string expressionName;
     iss >> expressionName;
 
-    Expression* result = NULL;
+    Expression* result = getExpressionInstance_(expressionName);
+    if (result == NULL) return NULL;
 
     string item;
-    if (expressionName == "print") {
-      result = expFact_.createPrint();
-    } else if (expressionName == "sum") {
-      result = expFact_.createSum();
-    } else {
-      return NULL;
-    }
 
     string token;
+
     while (iss >> token) {
       if (token[0] == '(') {
         string tokenAux;
-        while (token[token.size() - 1] != ')' && !iss.eof()) {
+        int bracketCount = 1;
+        while (!iss.eof() && bracketCount) {
           iss >> tokenAux;
+
+          bracketCount += count(tokenAux.begin(), tokenAux.end(), '(');
+          bracketCount -= count(tokenAux.begin(), tokenAux.end(), ')');
+
           token.append(" ");
           token.append(tokenAux);
         }
-        printf("%s\n", token.c_str());
         Expression* e = parseExpression_(token);
         if (e == NULL) return NULL;
         result->addArgument(e);

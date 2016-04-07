@@ -87,8 +87,9 @@ public:
     deque<Argument>::iterator it = args_.begin();
     for (; it != args_.end(); ++it) {
       Atom a = getArgumentValue(*it, c);
-      cout << a.getValue() << endl;
+      cout << a.getValue() << " ";
     }
+    cout << endl;
 
     NilAtom nil;
     return nil;
@@ -97,18 +98,22 @@ public:
 };
 
 
-class SumExpression : public Expression {
+class MathExpression : public Expression {
 
 public:
 
+  virtual int operation(int a, int v) = 0;
+
   virtual Atom eval(Context &c) {
-    int value = 0;
     deque<Argument> args_ = getArguments();
 
     deque<Argument>::iterator it = args_.begin();
-    for (; it != args_.end(); ++it) {
+
+    int value = stoi(getArgumentValue(*it, c).getValue());
+
+    for (++it; it != args_.end(); ++it) {
       Atom a = getArgumentValue(*it, c);
-      value += stoi(a.getValue());
+      value = operation(value, stoi(a.getValue()));
     }
 
     stringstream ss;
@@ -118,5 +123,38 @@ public:
   }
 
 };
+
+class SumExpression : public MathExpression {
+
+  virtual int operation(int a, int b) {
+    return a + b;
+  }
+
+};
+
+class DiffExpression : public MathExpression {
+
+  virtual int operation(int a, int b) {
+    return a - b;
+  }
+
+};
+
+class MulExpression : public MathExpression {
+
+  virtual int operation(int a, int b) {
+    return a * b;
+  }
+
+};
+
+class DivExpression : public MathExpression {
+
+  virtual int operation(int a, int b) {
+    return a / b;
+  }
+
+};
+
 
 #endif
