@@ -14,7 +14,7 @@ class Factory {
 public:
 
   template <class U>
-  U* createExpression() {
+  U* createObject() {
     U* var = new U();
     createdObjects_.push_back((U*) var);
     return var;
@@ -34,26 +34,68 @@ class ExpressionFactory : private Factory<Expression> {
 public:
 
   PrintExpression* createPrint() {
-    return createExpression<PrintExpression>();
+    return createObject<PrintExpression>();
   }
 
   SumExpression* createSum() {
-    return createExpression<SumExpression>();
+    return createObject<SumExpression>();
   }
 
   DiffExpression* createDiff() {
-    return createExpression<DiffExpression>();
+    return createObject<DiffExpression>();
   }
 
   MulExpression* createMul() {
-    return createExpression<MulExpression>();
+    return createObject<MulExpression>();
   }
 
   DivExpression* createDiv() {
-    return createExpression<DivExpression>();
+    return createObject<DivExpression>();
+  }
+
+  ListExpression* createList() {
+    return createObject<ListExpression>();
+  }
+
+};
+
+
+class AtomFactory : private Factory<Atom> {
+
+public:
+
+  StringAtom* createString() {
+    return createObject<StringAtom>();
+  }
+
+  NilAtom* createNil() {
+    return createObject<NilAtom>();
+  }
+
+  ListAtom* createList() {
+    return createObject<ListAtom>();
   }
 
 
 };
+
+
+class Context {
+
+ExpressionFactory expressionFactory_;
+AtomFactory atomFactory_;
+
+public:
+
+  ExpressionFactory& getExpressionFactory() {
+    return expressionFactory_;
+  }
+
+  AtomFactory& getAtomFactory() {
+    return atomFactory_;
+  }
+
+};
+
 
 #endif

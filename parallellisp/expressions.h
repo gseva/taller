@@ -5,28 +5,24 @@
 #include "atoms.h"
 
 
+class Context;
 class Expression;
 
 
-class Context {
-
-};
-
-
 class Argument {
-  Atom a_;
+  Atom* a_;
   Expression* e_;
   bool isAtom_;
 
 public:
-  Argument(Atom a): a_(a), isAtom_(true) {
+  Argument(Atom* a): a_(a), isAtom_(true) {
 
   }
-  Argument(Expression* e): a_(""), e_(e), isAtom_(false){
+  Argument(Expression* e): e_(e), isAtom_(false){
 
   }
 
-  Atom getAtom() {
+  Atom* getAtom() {
     return a_;
   }
 
@@ -52,25 +48,18 @@ public:
     args_.push_back(arg);
   }
 
-  void addArgument(Atom a) {
+  void addArgument(Atom* a) {
     Argument arg(a);
     args_.push_back(arg);
   }
 
-  Atom getArgumentValue(Argument a, Context &c) {
-    if (a.isAtom()) {
-      return a.getAtom();
-    } else {
-      Expression* e = a.getExpression();
-      return e->eval(c);
-    }
-  }
+  Atom* getArgumentValue(Argument a, Context& c);
 
   deque<Argument>& getArguments() {
     return args_;
   }
 
-  virtual Atom eval(Context &c) = 0;
+  virtual Atom* eval(Context& c) = 0;
 
   virtual ~Expression() {}
 
@@ -80,20 +69,7 @@ public:
 class PrintExpression : public Expression {
 
 public:
-  virtual Atom eval(Context &c) {
-
-    deque<Argument> args_ = getArguments();
-
-    deque<Argument>::iterator it = args_.begin();
-    for (; it != args_.end(); ++it) {
-      Atom a = getArgumentValue(*it, c);
-      cout << a.getValue() << " ";
-    }
-    cout << endl;
-
-    NilAtom nil;
-    return nil;
-  }
+  virtual Atom* eval(Context& c);
 
 };
 
@@ -104,23 +80,7 @@ public:
 
   virtual int operation(int a, int v) = 0;
 
-  virtual Atom eval(Context &c) {
-    deque<Argument> args_ = getArguments();
-
-    deque<Argument>::iterator it = args_.begin();
-
-    int value = stoi(getArgumentValue(*it, c).getValue());
-
-    for (++it; it != args_.end(); ++it) {
-      Atom a = getArgumentValue(*it, c);
-      value = operation(value, stoi(a.getValue()));
-    }
-
-    stringstream ss;
-    ss << value;
-    Atom result(ss.str());
-    return result;
-  }
+  virtual Atom* eval(Context& c);
 
 };
 
@@ -153,6 +113,14 @@ class DivExpression : public MathExpression {
   virtual int operation(int a, int b) {
     return a / b;
   }
+
+};
+
+
+class ListExpression : public Expression {
+
+public:
+  virtual Atom* eval(Context& c);
 
 };
 

@@ -4,14 +4,13 @@
 #include "common.h"
 #include "expressions.h"
 #include "parser.h"
-#include "factories.h"
 
 
 class Reader {
 
 public:
   string nextLine() {
-    return "(print (/ 100 (+ 2 3) (* 1 2)) (+ 1 (- 1 1)))";
+    return "(print (list 1 2 3 4))";
   }
 
 };
@@ -27,7 +26,8 @@ public:
   }
 
   int run() {
-    Parser p;
+    Context globalContext;
+    Parser p(globalContext);
     string s = reader_.nextLine();
     Expression* e = p.parse(s);
     if (e == NULL) {

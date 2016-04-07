@@ -9,28 +9,36 @@
 
 class Parser {
 
-private:
-
-  ExpressionFactory expFact_;
+  Context& globalContext_;
 
   bool isExpression_(const string s) {
     return (s[0] == '(' && s[s.size() - 1] == ')');
   }
 
   Expression* getExpressionInstance_(string name) {
+    ExpressionFactory& expFact = globalContext_.getExpressionFactory();
     if (name == "print") {
-      return expFact_.createPrint();
+      return expFact.createPrint();
     } else if (name == "+") {
-      return expFact_.createSum();
+      return expFact.createSum();
     } else if (name == "-") {
-      return expFact_.createDiff();
+      return expFact.createDiff();
     } else if (name == "*") {
-      return expFact_.createMul();
+      return expFact.createMul();
     } else if (name == "/") {
-      return expFact_.createDiv();
+      return expFact.createDiv();
+    } else if (name == "list") {
+      return expFact.createList();
     } else {
       return NULL;
     }
+  }
+
+  Atom* getAtomInstance_(string s) {
+    AtomFactory& atomFact = globalContext_.getAtomFactory();
+    StringAtom* a = atomFact.createString();
+    a->setValue(s);
+    return a;
   }
 
   Expression* parseExpression_(const string s) {
@@ -67,7 +75,7 @@ private:
         if (e == NULL) return NULL;
         result->addArgument(e);
       } else {
-        Atom atom(token);
+        Atom* atom = getAtomInstance_(token);
         result->addArgument(atom);
       }
       token.clear();
@@ -78,8 +86,8 @@ private:
 
 public:
 
-  // Parser() : expFact_(ef) {
-  // }
+  Parser(Context& globalContext) : globalContext_(globalContext) {
+  }
 
   Expression* parse(const string s) {
     return parseExpression_(s);
