@@ -12,10 +12,8 @@ int main(int argc, char const *argv[]) {
   Reader r;
   Interpreter i(r);
 
-  if (i.run()) {
-    cout << "ERROR: <línea inválida>" << endl;
-    return 2;
-  }
+  if (i.run()) return 2;
+
   return 0;
 
 }
