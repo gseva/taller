@@ -9,8 +9,15 @@
 class Reader {
 
 public:
+
+  bool end() {
+    return (bool) cin;
+  }
+
   string nextLine() {
-    return "(print (list 1 2 3 4))";
+    string buff;
+    getline(cin, buff);
+    return buff;
   }
 
 };
@@ -28,15 +35,20 @@ public:
   int run() {
     Context globalContext;
     Parser p(globalContext);
+
     string s = reader_.nextLine();
-    Expression* e = p.parse(s);
-    if (e == NULL) {
-      cout << "ERROR: " << s << endl;
-      return 1;
+    while (s.size()) {
+      Expression* e = p.parse(s);
+      if (e == NULL) {
+        cout << "ERROR: " << s << endl;
+        return 1;
+      }
+      Context c;
+      e->eval(c);
+      s = reader_.nextLine();
     }
-    Context c;
-    e->eval(c);
     return 0;
+
   }
 
 };

@@ -125,4 +125,32 @@ public:
 };
 
 
+class CarExpression : public Expression {
+
+public:
+
+  virtual Atom* extractAtom(vector<Atom*> values, Context& c);
+
+  virtual Atom* eval(Context& c);
+
+};
+
+
+class CdrExpression : public CarExpression {
+
+public:
+
+  virtual Atom* extractAtom(vector<Atom*> values, Context& c);
+
+};
+
+
+class AppendExpression : public Expression {
+
+public:
+
+  virtual Atom* eval(Context& c);
+
+};
+
 #endif

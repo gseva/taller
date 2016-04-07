@@ -57,6 +57,18 @@ public:
     return createObject<ListExpression>();
   }
 
+  CarExpression* createCar() {
+    return createObject<CarExpression>();
+  }
+
+  CdrExpression* createCdr() {
+    return createObject<CdrExpression>();
+  }
+
+  AppendExpression* createAppend() {
+    return createObject<AppendExpression>();
+  }
+
 };
 
 

@@ -74,6 +74,10 @@ public:
     return ss.str();
   }
 
+  vector<Atom*>& getValues() {
+    return values;
+  }
+
 };
 
 
