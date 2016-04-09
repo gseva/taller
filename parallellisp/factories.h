@@ -1,18 +1,23 @@
 #ifndef __EXPRESSION_FACTORY_H
 #define __EXPRESSION_FACTORY_H
 
-#include "common.h"
+#include <map>
+#include <string>
+#include <vector>
+
 #include "expressions.h"
 #include "atoms.h"
+#include "thread.h"
+
+
+class Context;
 
 
 template <class T>
 class Factory {
-
-  vector<T*> createdObjects_;
+  std::vector<T*> createdObjects_;
 
 public:
-
   template <class U>
   U* createObject() {
     U* var = new U();
@@ -21,92 +26,74 @@ public:
   }
 
   virtual ~Factory() {
-    for (int i = 0; i < createdObjects_.size(); ++i) {
+    for (size_t i = 0; i < createdObjects_.size(); ++i) {
       delete createdObjects_[i];
     }
   }
-
 };
 
 
 class ExpressionFactory : private Factory<Expression> {
-
 public:
-
-  PrintExpression* createPrint() {
-    return createObject<PrintExpression>();
-  }
-
-  SumExpression* createSum() {
-    return createObject<SumExpression>();
-  }
-
-  DiffExpression* createDiff() {
-    return createObject<DiffExpression>();
-  }
-
-  MulExpression* createMul() {
-    return createObject<MulExpression>();
-  }
-
-  DivExpression* createDiv() {
-    return createObject<DivExpression>();
-  }
-
-  ListExpression* createList() {
-    return createObject<ListExpression>();
-  }
-
-  CarExpression* createCar() {
-    return createObject<CarExpression>();
-  }
-
-  CdrExpression* createCdr() {
-    return createObject<CdrExpression>();
-  }
-
-  AppendExpression* createAppend() {
-    return createObject<AppendExpression>();
-  }
-
+  PrintExpression* createPrint();
+  SumExpression* createSum();
+  DiffExpression* createDiff();
+  MulExpression* createMul();
+  DivExpression* createDiv();
+  ListExpression* createList();
+  CarExpression* createCar();
+  CdrExpression* createCdr();
+  AppendExpression* createAppend();
+  IfExpression* createIf();
+  SetqExpression* createSetq();
+  SyncExpression* createSync();
 };
 
 
 class AtomFactory : private Factory<Atom> {
-
 public:
-
-  StringAtom* createString() {
-    return createObject<StringAtom>();
-  }
-
-  NilAtom* createNil() {
-    return createObject<NilAtom>();
-  }
-
-  ListAtom* createList() {
-    return createObject<ListAtom>();
-  }
+  StringAtom* createString();
+  NumericAtom* createNumeric();
+  ListAtom* createList();
+};
 
 
+class ExpressionRunner : public Thread {
+Context* c_;
+Expression* e_;
+public:
+  ExpressionRunner();
+
+  void setParameters(Context* c, Expression* e);
+  virtual void run();
+};
+
+
+class ExpressionRunnerFactory : private Factory<Thread> {
+public:
+  ExpressionRunner* createRunner();
 };
 
 
 class Context {
-
 ExpressionFactory expressionFactory_;
 AtomFactory atomFactory_;
+ExpressionRunnerFactory runnerFactory_;
+
+std::map<std::string,Atom*> atoms_;
+std::vector<ExpressionRunner*> threads_;
 
 public:
+  ExpressionFactory& getExpressionFactory();
+  AtomFactory& getAtomFactory();
 
-  ExpressionFactory& getExpressionFactory() {
-    return expressionFactory_;
-  }
+  void setAtom(std::string key, Atom* value);
+  Atom* getAtom(const std::string& key);
 
-  AtomFactory& getAtomFactory() {
-    return atomFactory_;
-  }
+  void runInThread(Expression* e);
+  void joinThreads();
 
+  ~Context();
 };
 
 

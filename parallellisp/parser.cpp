@@ -1,9 +1,39 @@
 
+#include <algorithm>
+#include <string>
+#include <iostream>
+#include <sstream>
+
 #include "parser.h"
 
 
-Expression* Parser::getExpressionInstance_(string name) {
+bool isNumber(const std::string& s) {
+    std::string::const_iterator it = s.begin();
+    while (it != s.end() && isdigit(*it)) ++it;
+    return !s.empty() && it == s.end();
+}
+
+bool isExpression_(const std::string& s) {
+  return (s[0] == '(' && s[s.size() - 1] == ')');
+}
+
+
+Parser::Parser(Context& globalContext) : globalContext_(globalContext) {
+}
+
+Expression* Parser::parse(const std::string s) {
+  return parseExpression_(s);
+}
+
+ParsingContext Parser::getParsingContext() {
+  return parsingContext_;
+}
+
+
+Expression* Parser::getExpressionInstance_(const std::string name) {
+  parsingContext_ = CommonExpression;
   ExpressionFactory& expFact = globalContext_.getExpressionFactory();
+
   if (name == "print") {
     return expFact.createPrint();
   } else if (name == "+") {
@@ -22,38 +52,58 @@ Expression* Parser::getExpressionInstance_(string name) {
     return expFact.createCdr();
   } else if (name == "append") {
     return expFact.createAppend();
+  } else if (name == "if") {
+    return expFact.createIf();
+  } else if (name == "setq") {
+    parsingContext_ = Setq;
+    return expFact.createSetq();
+  } else if (name == "sync") {
+    parsingContext_ = Sync;
+    return expFact.createSync();
   } else {
     return NULL;
   }
 }
 
 
-Atom* Parser::getAtomInstance_(string s) {
+Atom* Parser::getAtomInstance_(const std::string s) {
   AtomFactory& atomFact = globalContext_.getAtomFactory();
+  if (isNumber(s)) {
+    NumericAtom* a = atomFact.createNumeric();
+    a->setValue(s);
+    return a;
+  }
+
+  if (parsingContext_ != Setq) {
+    Atom* variable = globalContext_.getAtom(s);
+    if (variable != NULL) return variable;
+  }
+
   StringAtom* a = atomFact.createString();
   a->setValue(s);
   return a;
 }
 
 
-Expression* Parser::parseExpression_(const string s) {
+Expression* Parser::parseExpression_(const std::string s) {
   if (!isExpression_(s)) return NULL;
 
-  istringstream iss(s.substr(1, s.size() - 2));
+  std::istringstream iss(s.substr(1, s.size() - 2));
 
-  cout << "uso " << s.substr(1, s.size() - 2) << endl;
+  // TODO: Borrar
+  // cout << "uso " << s.substr(1, s.size() - 2) << endl;
 
-  string expressionName;
+  std::string expressionName;
   iss >> expressionName;
 
   Expression* result = getExpressionInstance_(expressionName);
   if (result == NULL) return NULL;
 
-  string token;
+  std::string token;
 
   while (iss >> token) {
     if (token[0] == '(') {
-      string tokenAux;
+      std::string tokenAux;
       int bracketCount = 0;
 
       bracketCount += count(token.begin(), token.end(), '(');
@@ -78,5 +128,4 @@ Expression* Parser::parseExpression_(const string s) {
     token.clear();
   }
   return result;
-
 }

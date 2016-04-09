@@ -1,12 +1,13 @@
 
-#include "common.h"
+#include <iostream>
+
 #include "interpreter.h"
 
 
 int main(int argc, char const *argv[]) {
-
   if (argc > 1) {
-    cout << "ERROR: argumentos" << endl;
+    std::cout << "ERROR: argumentos" << std::endl;
+    return 1;
   }
 
   Reader r;
@@ -15,5 +16,4 @@ int main(int argc, char const *argv[]) {
   if (i.run()) return 2;
 
   return 0;
-
 }

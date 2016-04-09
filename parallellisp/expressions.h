@@ -1,7 +1,9 @@
 #ifndef __LIST_EXPRESSIONS_H__
 #define __LIST_EXPRESSIONS_H__
 
-#include "common.h"
+#include <deque>
+#include <vector>
+
 #include "atoms.h"
 
 
@@ -15,142 +17,99 @@ class Argument {
   bool isAtom_;
 
 public:
-  Argument(Atom* a): a_(a), isAtom_(true) {
+  explicit Argument(Atom* a);
+  explicit Argument(Expression* e);
 
-  }
-  Argument(Expression* e): e_(e), isAtom_(false){
-
-  }
-
-  Atom* getAtom() {
-    return a_;
-  }
-
-  Expression* getExpression() {
-    return e_;
-  }
-
-  bool isAtom() {
-    return isAtom_;
-  }
-
+  Atom* getAtom();
+  Expression* getExpression();
+  bool isAtom();
 };
 
 
 class Expression {
-
-deque<Argument> args_;
+std::deque<Argument> args_;
 
 public:
-
-  void addArgument(Expression* e) {
-    Argument arg(e);
-    args_.push_back(arg);
-  }
-
-  void addArgument(Atom* a) {
-    Argument arg(a);
-    args_.push_back(arg);
-  }
-
+  void addArgument(Expression* e);
+  void addArgument(Atom* a);
   Atom* getArgumentValue(Argument a, Context& c);
+  std::deque<Argument>& getArguments();
 
-  deque<Argument>& getArguments() {
-    return args_;
-  }
+  ListAtom* createNil(Context &c);
 
   virtual Atom* eval(Context& c) = 0;
-
   virtual ~Expression() {}
-
 };
 
 
 class PrintExpression : public Expression {
-
 public:
   virtual Atom* eval(Context& c);
-
 };
 
 
 class MathExpression : public Expression {
-
 public:
-
   virtual int operation(int a, int v) = 0;
-
   virtual Atom* eval(Context& c);
-
 };
 
 class SumExpression : public MathExpression {
-
-  virtual int operation(int a, int b) {
-    return a + b;
-  }
-
+  virtual int operation(int a, int b);
 };
 
 class DiffExpression : public MathExpression {
-
-  virtual int operation(int a, int b) {
-    return a - b;
-  }
-
+  virtual int operation(int a, int b);
 };
 
 class MulExpression : public MathExpression {
-
-  virtual int operation(int a, int b) {
-    return a * b;
-  }
-
+  virtual int operation(int a, int b);
 };
 
 class DivExpression : public MathExpression {
-
-  virtual int operation(int a, int b) {
-    return a / b;
-  }
-
+  virtual int operation(int a, int b);
 };
 
 
 class ListExpression : public Expression {
-
 public:
   virtual Atom* eval(Context& c);
-
 };
 
 
 class CarExpression : public Expression {
-
 public:
-
-  virtual Atom* extractAtom(vector<Atom*> values, Context& c);
-
+  virtual Atom* extractAtom(std::vector<Atom*> values, Context& c);
   virtual Atom* eval(Context& c);
-
 };
 
 
 class CdrExpression : public CarExpression {
-
 public:
-
-  virtual Atom* extractAtom(vector<Atom*> values, Context& c);
-
+  virtual Atom* extractAtom(std::vector<Atom*> values, Context& c);
 };
 
 
 class AppendExpression : public Expression {
-
 public:
-
   virtual Atom* eval(Context& c);
+};
 
+
+class IfExpression : public Expression {
+public:
+  virtual Atom* eval(Context& c);
+};
+
+
+class SetqExpression : public Expression {
+public:
+  virtual Atom* eval(Context& c);
+};
+
+class SyncExpression : public Expression {
+public:
+  virtual Atom* eval(Context& c);
 };
 
 #endif

@@ -1,35 +1,34 @@
 #ifndef __PARSER_H__
 #define __PARSER_H__
 
-#include "common.h"
+#include <string>
+
 #include "expressions.h"
 #include "atoms.h"
 #include "factories.h"
 
+enum ParsingContext {
+  CommonExpression,
+  Setq,
+  Sync
+};
 
 class Parser {
-
   Context& globalContext_;
+  ParsingContext parsingContext_;
 
-  bool isExpression_(const string s) {
-    return (s[0] == '(' && s[s.size() - 1] == ')');
-  }
+  Expression* getExpressionInstance_(std::string name);
 
-  Expression* getExpressionInstance_(string name);
+  Atom* getAtomInstance_(std::string s);
 
-  Atom* getAtomInstance_(string s);
-
-  Expression* parseExpression_(const string s);
+  Expression* parseExpression_(const std::string s);
 
 public:
+  explicit Parser(Context& globalContext);
 
-  Parser(Context& globalContext) : globalContext_(globalContext) {
-  }
+  Expression* parse(const std::string s);
 
-  Expression* parse(const string s) {
-    return parseExpression_(s);
-  }
-
+  ParsingContext getParsingContext();
 };
 
 
