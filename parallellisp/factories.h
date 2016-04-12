@@ -15,19 +15,19 @@ class Context;
 
 template <class T>
 class Factory {
-  std::vector<T*> createdObjects_;
+  std::vector<T*> instances_;
 
 public:
   template <class U>
   U* createObject() {
     U* var = new U();
-    createdObjects_.push_back((U*) var);
+    instances_.push_back((U*) var);
     return var;
   }
 
   virtual ~Factory() {
-    for (size_t i = 0; i < createdObjects_.size(); ++i) {
-      delete createdObjects_[i];
+    for (size_t i = 0; i < instances_.size(); ++i) {
+      delete instances_[i];
     }
   }
 };
@@ -47,6 +47,7 @@ public:
   IfExpression* createIf();
   SetqExpression* createSetq();
   SyncExpression* createSync();
+  DefunExpression* createDefun();
 };
 
 
@@ -81,6 +82,7 @@ AtomFactory atomFactory_;
 ExpressionRunnerFactory runnerFactory_;
 
 std::map<std::string,Atom*> atoms_;
+std::map<std::string,Expression*> expressions_;
 std::vector<ExpressionRunner*> threads_;
 
 public:
@@ -89,6 +91,9 @@ public:
 
   void setAtom(std::string key, Atom* value);
   Atom* getAtom(const std::string& key);
+
+  void setExpression(std::string key, Expression* value);
+  Expression* getExpression(const std::string& key);
 
   void runInThread(Expression* e);
   void joinThreads();

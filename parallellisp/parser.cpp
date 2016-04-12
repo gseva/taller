@@ -22,6 +22,7 @@ Parser::Parser(Context& globalContext) : globalContext_(globalContext) {
 }
 
 Expression* Parser::parse(const std::string s) {
+  parsingContext_ = CommonExpression;
   return parseExpression_(s);
 }
 
@@ -31,7 +32,6 @@ ParsingContext Parser::getParsingContext() {
 
 
 Expression* Parser::getExpressionInstance_(const std::string name) {
-  parsingContext_ = CommonExpression;
   ExpressionFactory& expFact = globalContext_.getExpressionFactory();
 
   if (name == "print") {
@@ -60,14 +60,22 @@ Expression* Parser::getExpressionInstance_(const std::string name) {
   } else if (name == "sync") {
     parsingContext_ = Sync;
     return expFact.createSync();
+  } else if (name == "defun") {
+    parsingContext_ = Defun;
+    return expFact.createDefun();
   } else {
-    return NULL;
+    Expression* e = globalContext_.getExpression(name);
+    if (e != NULL) {
+      parsingContext_ = Fun;
+    }
+    return e;
   }
 }
 
 
 Atom* Parser::getAtomInstance_(const std::string s) {
   AtomFactory& atomFact = globalContext_.getAtomFactory();
+
   if (isNumber(s)) {
     NumericAtom* a = atomFact.createNumeric();
     a->setValue(s);
@@ -85,13 +93,17 @@ Atom* Parser::getAtomInstance_(const std::string s) {
 }
 
 
+Expression* Parser::functionExpression_(Expression* r, const std::string s) {
+  std::string newExpr = ((DefunExpression*) r)->getExpressionString(s);
+  parsingContext_ = CommonExpression;
+  return parseExpression_(newExpr);
+}
+
+
 Expression* Parser::parseExpression_(const std::string s) {
   if (!isExpression_(s)) return NULL;
 
   std::istringstream iss(s.substr(1, s.size() - 2));
-
-  // TODO: Borrar
-  // cout << "uso " << s.substr(1, s.size() - 2) << endl;
 
   std::string expressionName;
   iss >> expressionName;
@@ -118,14 +130,36 @@ Expression* Parser::parseExpression_(const std::string s) {
         token.append(" ");
         token.append(tokenAux);
       }
+
+      if (parsingContext_ == Defun) {
+        if (token == "(ENV)") {
+          continue;
+        } else {
+          ((DefunExpression*) result)->setExpressionString(token);
+          if (!iss.eof()) return NULL;
+          return result;
+        }
+      }
+
+      if (parsingContext_ == Fun) {
+        return functionExpression_(result, token);
+      }
+
       Expression* e = parseExpression_(token);
       if (e == NULL) return NULL;
+
       result->addArgument(e);
     } else {
+      if (parsingContext_ == Fun) {
+        return functionExpression_(result, token);
+      }
+
       Atom* atom = getAtomInstance_(token);
+
       result->addArgument(atom);
     }
     token.clear();
   }
+
   return result;
 }

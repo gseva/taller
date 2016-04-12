@@ -10,7 +10,9 @@
 enum ParsingContext {
   CommonExpression,
   Setq,
-  Sync
+  Sync,
+  Defun,
+  Fun
 };
 
 class Parser {
@@ -21,13 +23,13 @@ class Parser {
 
   Atom* getAtomInstance_(std::string s);
 
+  Expression* functionExpression_(Expression* r, const std::string s);
   Expression* parseExpression_(const std::string s);
 
 public:
   explicit Parser(Context& globalContext);
 
   Expression* parse(const std::string s);
-
   ParsingContext getParsingContext();
 };
 

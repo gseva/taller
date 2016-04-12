@@ -3,6 +3,7 @@
 
 #include <deque>
 #include <vector>
+#include <string>
 
 #include "atoms.h"
 
@@ -19,6 +20,10 @@ class Argument {
 public:
   explicit Argument(Atom* a);
   explicit Argument(Expression* e);
+  Argument();
+
+  void setAtom(Atom* a);
+  void setExpression(Expression* e);
 
   Atom* getAtom();
   Expression* getExpression();
@@ -27,18 +32,19 @@ public:
 
 
 class Expression {
-std::deque<Argument> args_;
+std::deque<Argument*> args_;
 
 public:
   void addArgument(Expression* e);
   void addArgument(Atom* a);
-  Atom* getArgumentValue(Argument a, Context& c);
-  std::deque<Argument>& getArguments();
+
+  Atom* getArgumentValue(Argument* a, Context& c);
+  std::deque<Argument*>& getArguments();
 
   ListAtom* createNil(Context &c);
 
   virtual Atom* eval(Context& c) = 0;
-  virtual ~Expression() {}
+  virtual ~Expression();
 };
 
 
@@ -79,14 +85,14 @@ public:
 
 class CarExpression : public Expression {
 public:
-  virtual Atom* extractAtom(std::vector<Atom*> values, Context& c);
+  virtual Atom* extractAtom(std::vector<Atom*>& values, Context& c);
   virtual Atom* eval(Context& c);
 };
 
 
 class CdrExpression : public CarExpression {
 public:
-  virtual Atom* extractAtom(std::vector<Atom*> values, Context& c);
+  virtual Atom* extractAtom(std::vector<Atom*>& values, Context& c);
 };
 
 
@@ -110,6 +116,16 @@ public:
 class SyncExpression : public Expression {
 public:
   virtual Atom* eval(Context& c);
+};
+
+class DefunExpression : public Expression {
+std::string expression_;
+
+public:
+  virtual Atom* eval(Context& c);
+
+  void setExpressionString(std::string s);
+  std::string getExpressionString(std::string parameters);
 };
 
 #endif

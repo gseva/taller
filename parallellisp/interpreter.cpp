@@ -8,6 +8,12 @@
 std::string Reader::nextLine() {
   std::string buff;
   getline(std::cin, buff);
+
+  // Remuevo trailing spaces
+  size_t endpos = buff.find_last_not_of(" \t");
+  if (std::string::npos != endpos) {
+      buff = buff.substr(0, endpos + 1);
+  }
   return buff;
 }
 

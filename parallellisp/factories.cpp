@@ -2,9 +2,9 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "factories.h"
-
 
 
 PrintExpression* ExpressionFactory::createPrint() {
@@ -55,6 +55,10 @@ SyncExpression* ExpressionFactory::createSync() {
   return createObject<SyncExpression>();
 }
 
+DefunExpression* ExpressionFactory::createDefun() {
+  return createObject<DefunExpression>();
+}
+
 
 StringAtom* AtomFactory::createString() {
   return createObject<StringAtom>();
@@ -102,6 +106,17 @@ void Context::setAtom(std::string key, Atom* value) {
 Atom* Context::getAtom(const std::string& key) {
   std::map<std::string,Atom*>::iterator it = atoms_.find(key);
   if (it == atoms_.end()) return NULL;
+
+  return (*it).second;
+}
+
+void Context::setExpression(std::string key, Expression* value) {
+  expressions_[key] = value;
+}
+
+Expression* Context::getExpression(const std::string& key) {
+  std::map<std::string,Expression*>::iterator it = expressions_.find(key);
+  if (it == expressions_.end()) return NULL;
 
   return (*it).second;
 }
