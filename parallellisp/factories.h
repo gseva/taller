@@ -40,6 +40,9 @@ public:
   DiffExpression* createDiff();
   MulExpression* createMul();
   DivExpression* createDiv();
+  EqualExpression* createEqual();
+  LesserExpression* createLesser();
+  GreaterExpression* createGreater();
   ListExpression* createList();
   CarExpression* createCar();
   CdrExpression* createCdr();

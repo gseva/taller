@@ -90,6 +90,25 @@ public:
 };
 
 
+class EqualExpression : public Expression {
+public:
+  virtual Atom* eval(Context& c);
+  virtual bool compare(const std::string& a, const std::string& b);
+};
+
+
+class LesserExpression : public EqualExpression {
+public:
+  virtual bool compare(const std::string& a, const std::string& b);
+};
+
+
+class GreaterExpression : public EqualExpression {
+public:
+  virtual bool compare(const std::string& a, const std::string& b);
+};
+
+
 class CdrExpression : public CarExpression {
 public:
   virtual Atom* extractAtom(std::vector<Atom*>& values, Context& c);

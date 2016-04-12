@@ -44,6 +44,12 @@ Expression* Parser::getExpressionInstance_(const std::string name) {
     return expFact.createMul();
   } else if (name == "/") {
     return expFact.createDiv();
+  } else if (name == "=") {
+    return expFact.createEqual();
+  } else if (name == "<") {
+    return expFact.createLesser();
+  } else if (name == ">") {
+    return expFact.createGreater();
   } else if (name == "list") {
     return expFact.createList();
   } else if (name == "car") {

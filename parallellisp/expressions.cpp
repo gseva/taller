@@ -134,6 +134,39 @@ int DivExpression::operation(int a, int b) {
 }
 
 
+Atom* EqualExpression::eval(Context& c) {
+  std::deque<Argument*> args = getArguments();
+
+  if (!args.size()) return createNil(c);
+
+  std::deque<Argument*>::iterator it = args.begin();
+
+  Atom* a = getArgumentValue(*it, c);
+  Atom* b = getArgumentValue(*(it + 1), c);
+  if (compare(a->getValue(), b->getValue())) {
+    NumericAtom* result = c.getAtomFactory().createNumeric();
+    result->setValue("1");
+    return result;
+  } else {
+    return createNil(c);
+  }
+}
+
+bool EqualExpression::compare(const std::string& a, const std::string& b) {
+  return a == b;
+}
+
+
+bool LesserExpression::compare(const std::string& a, const std::string& b) {
+  return a < b;
+}
+
+
+bool GreaterExpression::compare(const std::string& a, const std::string& b) {
+  return a > b;
+}
+
+
 Atom* ListExpression::eval(Context& c) {
   ListAtom* result = createNil(c);
 

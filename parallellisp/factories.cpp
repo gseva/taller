@@ -27,6 +27,18 @@ DivExpression* ExpressionFactory::createDiv() {
   return createObject<DivExpression>();
 }
 
+EqualExpression* ExpressionFactory::createEqual() {
+  return createObject<EqualExpression>();
+}
+
+LesserExpression* ExpressionFactory::createLesser() {
+  return createObject<LesserExpression>();
+}
+
+GreaterExpression* ExpressionFactory::createGreater() {
+  return createObject<GreaterExpression>();
+}
+
 ListExpression* ExpressionFactory::createList() {
   return createObject<ListExpression>();
 }
