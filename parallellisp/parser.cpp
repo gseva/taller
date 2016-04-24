@@ -21,7 +21,7 @@ bool isExpression_(const std::string& s) {
 Parser::Parser(Context& globalContext) : globalContext_(globalContext) {
 }
 
-Expression* Parser::parse(const std::string s) {
+Expression* Parser::parse(const std::string& s) {
   parsingContext_ = CommonExpression;
   return parseExpression_(s);
 }
@@ -31,7 +31,7 @@ ParsingContext Parser::getParsingContext() {
 }
 
 
-Expression* Parser::getExpressionInstance_(const std::string name) {
+Expression* Parser::getExpressionInstance_(const std::string& name) {
   ExpressionFactory& expFact = globalContext_.getExpressionFactory();
 
   if (name == "print") {
@@ -79,7 +79,7 @@ Expression* Parser::getExpressionInstance_(const std::string name) {
 }
 
 
-Atom* Parser::getAtomInstance_(const std::string s) {
+Atom* Parser::getAtomInstance_(const std::string& s) {
   AtomFactory& atomFact = globalContext_.getAtomFactory();
 
   if (isNumber(s)) {
@@ -99,14 +99,14 @@ Atom* Parser::getAtomInstance_(const std::string s) {
 }
 
 
-Expression* Parser::functionExpression_(Expression* r, const std::string s) {
+Expression* Parser::functionExpression_(Expression* r, const std::string& s) {
   std::string newExpr = ((DefunExpression*) r)->getExpressionString(s);
   parsingContext_ = CommonExpression;
   return parseExpression_(newExpr);
 }
 
 
-Expression* Parser::parseExpression_(const std::string s) {
+Expression* Parser::parseExpression_(const std::string& s) {
   if (!isExpression_(s)) return NULL;
 
   std::istringstream iss(s.substr(1, s.size() - 2));

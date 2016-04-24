@@ -24,10 +24,7 @@ public:
 
   void setAtom(Atom* a);
   void setExpression(Expression* e);
-
-  Atom* getAtom();
-  Expression* getExpression();
-  bool isAtom();
+  Atom* getValue(Context &c);
 };
 
 
@@ -38,7 +35,6 @@ public:
   void addArgument(Expression* e);
   void addArgument(Atom* a);
 
-  Atom* getArgumentValue(Argument* a, Context& c);
   std::deque<Argument*>& getArguments();
 
   ListAtom* createNil(Context &c);
@@ -134,8 +130,8 @@ std::string expression_;
 public:
   virtual Atom* eval(Context& c);
 
-  void setExpressionString(std::string s);
-  std::string getExpressionString(std::string parameters);
+  void setExpressionString(const std::string& s);
+  std::string getExpressionString(const std::string& parameters);
 };
 
 #endif

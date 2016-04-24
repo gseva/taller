@@ -14,3 +14,29 @@ void Thread::start() {
 void Thread::join() {
   pthread_join(thread, NULL);
 }
+
+
+Mutex::Mutex() {
+  pthread_mutex_init(&this->mutex, NULL);
+}
+
+void Mutex::lock() {
+  pthread_mutex_lock(&this->mutex);
+}
+
+void Mutex::unlock() {
+  pthread_mutex_unlock(&this->mutex);
+}
+
+Mutex::~Mutex() {
+  pthread_mutex_destroy(&this->mutex);
+}
+
+
+Lock::Lock(Mutex &m) : m(m) {
+  m.lock();
+}
+
+Lock::~Lock() {
+  m.unlock();
+}

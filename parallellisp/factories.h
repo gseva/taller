@@ -80,6 +80,8 @@ public:
 
 
 class Context {
+Mutex& m_;
+
 ExpressionFactory expressionFactory_;
 AtomFactory atomFactory_;
 ExpressionRunnerFactory runnerFactory_;
@@ -89,6 +91,10 @@ std::map<std::string,Expression*> expressions_;
 std::vector<ExpressionRunner*> threads_;
 
 public:
+  explicit Context(Mutex& m);
+
+  Mutex& getMutex();
+
   ExpressionFactory& getExpressionFactory();
   AtomFactory& getAtomFactory();
 

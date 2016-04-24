@@ -103,6 +103,13 @@ ExpressionRunner* ExpressionRunnerFactory::createRunner() {
 }
 
 
+Context::Context(Mutex& m) : m_(m) {
+}
+
+Mutex& Context::getMutex() {
+  return m_;
+}
+
 ExpressionFactory& Context::getExpressionFactory() {
   return expressionFactory_;
 }
@@ -112,6 +119,7 @@ AtomFactory& Context::getAtomFactory() {
 }
 
 void Context::setAtom(std::string key, Atom* value) {
+  Lock l(m_);
   atoms_[key] = value;
 }
 
@@ -123,6 +131,7 @@ Atom* Context::getAtom(const std::string& key) {
 }
 
 void Context::setExpression(std::string key, Expression* value) {
+  Lock l(m_);
   expressions_[key] = value;
 }
 

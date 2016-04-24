@@ -18,12 +18,12 @@ Argument::Argument(Expression* e): e_(e), isAtom_(false) {
 Argument::Argument(): isAtom_(false) {
 }
 
-Atom* Argument::getAtom() {
-  return a_;
-}
-
-Expression* Argument::getExpression() {
-  return e_;
+Atom* Argument::getValue(Context &c) {
+  if (isAtom_) {
+    return a_;
+  } else {
+    return e_->eval(c);
+  }
 }
 
 void Argument::setAtom(Atom* a) {
@@ -34,10 +34,6 @@ void Argument::setAtom(Atom* a) {
 void Argument::setExpression(Expression* e) {
   e_ = e;
   isAtom_ = false;
-}
-
-bool Argument::isAtom() {
-  return isAtom_;
 }
 
 
@@ -55,15 +51,6 @@ std::deque<Argument*>& Expression::getArguments() {
   return args_;
 }
 
-Atom* Expression::getArgumentValue(Argument* a, Context& c) {
-  if (a->isAtom()) {
-    return a->getAtom();
-  } else {
-    Expression* e = a->getExpression();
-    return e->eval(c);
-  }
-}
-
 ListAtom* Expression::createNil(Context& c) {
   return c.getAtomFactory().createList();
 }
@@ -79,16 +66,20 @@ Expression::~Expression() {
 
 Atom* PrintExpression::eval(Context& c) {
   std::deque<Argument*> args = getArguments();
+  std::stringstream ss;
 
   std::deque<Argument*>::iterator it = args.begin();
   for (; it != args.end(); ++it) {
-    Atom* a = getArgumentValue(*it, c);
-    std::cout << a->getValue();
+    Atom* a = (*it)->getValue(c);
+
+    ss << a->getValue();
     if (it != args.end() - 1) {
-      std::cout << " ";
+      ss << " ";
     }
   }
-  std::cout << std::endl;
+
+  Lock l(c.getMutex());
+  std::cout << ss.str() << std::endl;
 
   return createNil(c);
 }
@@ -99,10 +90,10 @@ Atom* MathExpression::eval(Context& c) {
 
   std::deque<Argument*>::iterator it = args.begin();
 
-  int value = ((NumericAtom*) getArgumentValue(*it, c))->getNumericValue();
+  int value = ((NumericAtom*) (*it)->getValue(c))->getNumericValue();
 
   for (++it; it != args.end(); ++it) {
-    NumericAtom* a = (NumericAtom*) getArgumentValue(*it, c);
+    NumericAtom* a = (NumericAtom*) (*it)->getValue(c);
     value = operation(value, a->getNumericValue());
   }
 
@@ -141,8 +132,8 @@ Atom* EqualExpression::eval(Context& c) {
 
   std::deque<Argument*>::iterator it = args.begin();
 
-  Atom* a = getArgumentValue(*it, c);
-  Atom* b = getArgumentValue(*(it + 1), c);
+  Atom* a = (*it)->getValue(c);
+  Atom* b = (*(it + 1))->getValue(c);
   if (compare(a->getValue(), b->getValue())) {
     NumericAtom* result = c.getAtomFactory().createNumeric();
     result->setValue("1");
@@ -175,7 +166,7 @@ Atom* ListExpression::eval(Context& c) {
   std::deque<Argument*>::iterator it = args.begin();
 
   for (; it != args.end(); ++it) {
-    Atom* a = getArgumentValue(*it, c);
+    Atom* a = (*it)->getValue(c);
     result->addValue(a);
   }
 
@@ -188,7 +179,7 @@ Atom* CarExpression::eval(Context& c) {
 
   if (!args.size()) return createNil(c);
 
-  ListAtom* list = (ListAtom*) getArgumentValue(args.front(), c);
+  ListAtom* list = (ListAtom*) args.front()->getValue(c);
   std::vector<Atom*>& values = list->getValues();
   if (!values.size()) return createNil(c);
 
@@ -221,7 +212,7 @@ Atom* AppendExpression::eval(Context& c) {
   std::deque<Argument*> args = getArguments();
   std::deque<Argument*>::iterator it = args.begin();
   for (; it != args.end(); ++it) {
-    ListAtom* atom = (ListAtom*) getArgumentValue(*it, c);;
+    ListAtom* atom = (ListAtom*) (*it)->getValue(c);;
 
     std::vector<Atom*>& values = atom->getValues();
     for (size_t i = 0; i < values.size(); ++i) {
@@ -237,11 +228,11 @@ Atom* IfExpression::eval(Context& c) {
   std::deque<Argument*> args = getArguments();
   std::deque<Argument*>::iterator it = args.begin();
   Atom* r;
-  if (getArgumentValue(*it, c)->isTrue()) {
-    r = getArgumentValue(*(it + 1), c);
+  if ((*it)->getValue(c)->isTrue()) {
+    r = (*(it + 1))->getValue(c);
 
   } else {
-    r =  getArgumentValue(*(it + 2), c);
+    r =  (*(it + 2))->getValue(c);
   }
   return r;
 }
@@ -251,8 +242,8 @@ Atom* SetqExpression::eval(Context& c) {
   std::deque<Argument*> args = getArguments();
   std::deque<Argument*>::iterator it = args.begin();
 
-  std::string key = getArgumentValue(*it, c)->getValue();
-  c.setAtom(key, getArgumentValue(*(it + 1), c));
+  std::string key = (*it)->getValue(c)->getValue();
+  c.setAtom(key, (*(it + 1))->getValue(c));
 
   return createNil(c);
 }
@@ -268,18 +259,18 @@ Atom* DefunExpression::eval(Context& c) {
   std::deque<Argument*> args = getArguments();
   std::deque<Argument*>::iterator it = args.begin();
 
-  std::string key = getArgumentValue(*it, c)->getValue();
+  std::string key = (*it)->getValue(c)->getValue();
 
   c.setExpression(key, this);
 
   return createNil(c);
 }
 
-void DefunExpression::setExpressionString(std::string s) {
+void DefunExpression::setExpressionString(const std::string& s) {
   expression_ = s;
 }
 
-std::string DefunExpression::getExpressionString(std::string param) {
+std::string DefunExpression::getExpressionString(const std::string& param) {
   std::string result = expression_;
   size_t index = 0;
 

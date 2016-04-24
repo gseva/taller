@@ -22,25 +22,26 @@ Interpreter::Interpreter(const Reader r) : reader_(r) {
 }
 
 int Interpreter::run() {
-    Context globalContext;
-    Parser p(globalContext);
+  Mutex m;
+  Context globalContext(m);
+  Parser p(globalContext);
 
-    std::string s = reader_.nextLine();
-    while (s.size()) {
-      Expression* e = p.parse(s);
-      if (e == NULL) {
-        std::cout << "ERROR: " << s << std::endl;
-        return 1;
-      }
-
-      if (p.getParsingContext() == Sync) {
-        e->eval(globalContext);
-      } else {
-        globalContext.runInThread(e);
-      }
-      // Context c;
-      s = reader_.nextLine();
+  std::string s = reader_.nextLine();
+  while (s.size()) {
+    Expression* e = p.parse(s);
+    if (e == NULL) {
+      std::cout << "ERROR: " << s << std::endl;
+      return 1;
     }
-    return 0;
+
+    if (p.getParsingContext() == Sync) {
+      e->eval(globalContext);
+    } else {
+      globalContext.runInThread(e);
+    }
+    // Context c;
+    s = reader_.nextLine();
   }
+  return 0;
+}
 
