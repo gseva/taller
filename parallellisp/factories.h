@@ -33,35 +33,6 @@ public:
 };
 
 
-class ExpressionFactory : private Factory<Expression> {
-public:
-  PrintExpression* createPrint();
-  SumExpression* createSum();
-  DiffExpression* createDiff();
-  MulExpression* createMul();
-  DivExpression* createDiv();
-  EqualExpression* createEqual();
-  LesserExpression* createLesser();
-  GreaterExpression* createGreater();
-  ListExpression* createList();
-  CarExpression* createCar();
-  CdrExpression* createCdr();
-  AppendExpression* createAppend();
-  IfExpression* createIf();
-  SetqExpression* createSetq();
-  SyncExpression* createSync();
-  DefunExpression* createDefun();
-};
-
-
-class AtomFactory : private Factory<Atom> {
-public:
-  StringAtom* createString();
-  NumericAtom* createNumeric();
-  ListAtom* createList();
-};
-
-
 class ExpressionRunner : public Thread {
 Context* c_;
 Expression* e_;
@@ -73,18 +44,12 @@ public:
 };
 
 
-class ExpressionRunnerFactory : private Factory<Thread> {
-public:
-  ExpressionRunner* createRunner();
-};
-
-
 class Context {
 Mutex& m_;
 
-ExpressionFactory expressionFactory_;
-AtomFactory atomFactory_;
-ExpressionRunnerFactory runnerFactory_;
+Factory<Expression> expressionFactory_;
+Factory<Atom> atomFactory_;
+Factory<ExpressionRunner> runnerFactory_;
 
 std::map<std::string,Atom*> atoms_;
 std::map<std::string,Expression*> expressions_;
@@ -95,8 +60,8 @@ public:
 
   Mutex& getMutex();
 
-  ExpressionFactory& getExpressionFactory();
-  AtomFactory& getAtomFactory();
+  Factory<Expression>& getExpressionFactory();
+  Factory<Atom>& getAtomFactory();
 
   void setAtom(std::string key, Atom* value);
   Atom* getAtom(const std::string& key);

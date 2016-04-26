@@ -32,43 +32,43 @@ ParsingContext Parser::getParsingContext() {
 
 
 Expression* Parser::getExpressionInstance_(const std::string& name) {
-  ExpressionFactory& expFact = globalContext_.getExpressionFactory();
+  Factory<Expression>& expFact = globalContext_.getExpressionFactory();
 
   if (name == "print") {
-    return expFact.createPrint();
+    return expFact.createObject<PrintExpression>();
   } else if (name == "+") {
-    return expFact.createSum();
+    return expFact.createObject<SumExpression>();
   } else if (name == "-") {
-    return expFact.createDiff();
+    return expFact.createObject<DiffExpression>();
   } else if (name == "*") {
-    return expFact.createMul();
+    return expFact.createObject<MulExpression>();
   } else if (name == "/") {
-    return expFact.createDiv();
+    return expFact.createObject<DivExpression>();
   } else if (name == "=") {
-    return expFact.createEqual();
+    return expFact.createObject<EqualExpression>();
   } else if (name == "<") {
-    return expFact.createLesser();
+    return expFact.createObject<LesserExpression>();
   } else if (name == ">") {
-    return expFact.createGreater();
+    return expFact.createObject<GreaterExpression>();
   } else if (name == "list") {
-    return expFact.createList();
+    return expFact.createObject<ListExpression>();
   } else if (name == "car") {
-    return expFact.createCar();
+    return expFact.createObject<CarExpression>();
   } else if (name == "cdr") {
-    return expFact.createCdr();
+    return expFact.createObject<CdrExpression>();
   } else if (name == "append") {
-    return expFact.createAppend();
+    return expFact.createObject<AppendExpression>();
   } else if (name == "if") {
-    return expFact.createIf();
+    return expFact.createObject<IfExpression>();
   } else if (name == "setq") {
     parsingContext_ = Setq;
-    return expFact.createSetq();
+    return expFact.createObject<SetqExpression>();
   } else if (name == "sync") {
     parsingContext_ = Sync;
-    return expFact.createSync();
+    return expFact.createObject<SyncExpression>();
   } else if (name == "defun") {
     parsingContext_ = Defun;
-    return expFact.createDefun();
+    return expFact.createObject<DefunExpression>();
   } else {
     Expression* e = globalContext_.getExpression(name);
     if (e != NULL) {
@@ -80,10 +80,10 @@ Expression* Parser::getExpressionInstance_(const std::string& name) {
 
 
 Atom* Parser::getAtomInstance_(const std::string& s) {
-  AtomFactory& atomFact = globalContext_.getAtomFactory();
+  Factory<Atom>& atomFact = globalContext_.getAtomFactory();
 
   if (isNumber(s)) {
-    NumericAtom* a = atomFact.createNumeric();
+    NumericAtom* a = atomFact.createObject<NumericAtom>();
     a->setValue(s);
     return a;
   }
@@ -93,7 +93,7 @@ Atom* Parser::getAtomInstance_(const std::string& s) {
     if (variable != NULL) return variable;
   }
 
-  StringAtom* a = atomFact.createString();
+  StringAtom* a = atomFact.createObject<StringAtom>();
   a->setValue(s);
   return a;
 }

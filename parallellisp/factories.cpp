@@ -7,84 +7,6 @@
 #include "factories.h"
 
 
-PrintExpression* ExpressionFactory::createPrint() {
-  return createObject<PrintExpression>();
-}
-
-SumExpression* ExpressionFactory::createSum() {
-  return createObject<SumExpression>();
-}
-
-DiffExpression* ExpressionFactory::createDiff() {
-  return createObject<DiffExpression>();
-}
-
-MulExpression* ExpressionFactory::createMul() {
-  return createObject<MulExpression>();
-}
-
-DivExpression* ExpressionFactory::createDiv() {
-  return createObject<DivExpression>();
-}
-
-EqualExpression* ExpressionFactory::createEqual() {
-  return createObject<EqualExpression>();
-}
-
-LesserExpression* ExpressionFactory::createLesser() {
-  return createObject<LesserExpression>();
-}
-
-GreaterExpression* ExpressionFactory::createGreater() {
-  return createObject<GreaterExpression>();
-}
-
-ListExpression* ExpressionFactory::createList() {
-  return createObject<ListExpression>();
-}
-
-CarExpression* ExpressionFactory::createCar() {
-  return createObject<CarExpression>();
-}
-
-CdrExpression* ExpressionFactory::createCdr() {
-  return createObject<CdrExpression>();
-}
-
-AppendExpression* ExpressionFactory::createAppend() {
-  return createObject<AppendExpression>();
-}
-
-IfExpression* ExpressionFactory::createIf() {
-  return createObject<IfExpression>();
-}
-
-SetqExpression* ExpressionFactory::createSetq() {
-  return createObject<SetqExpression>();
-}
-
-SyncExpression* ExpressionFactory::createSync() {
-  return createObject<SyncExpression>();
-}
-
-DefunExpression* ExpressionFactory::createDefun() {
-  return createObject<DefunExpression>();
-}
-
-
-StringAtom* AtomFactory::createString() {
-  return createObject<StringAtom>();
-}
-
-NumericAtom* AtomFactory::createNumeric() {
-  return createObject<NumericAtom>();
-}
-
-ListAtom* AtomFactory::createList() {
-  return createObject<ListAtom>();
-}
-
-
 ExpressionRunner::ExpressionRunner() : c_(NULL), e_(NULL) {
 }
 
@@ -98,11 +20,6 @@ void ExpressionRunner::run() {
 }
 
 
-ExpressionRunner* ExpressionRunnerFactory::createRunner() {
-  return createObject<ExpressionRunner>();
-}
-
-
 Context::Context(Mutex& m) : m_(m) {
 }
 
@@ -110,11 +27,11 @@ Mutex& Context::getMutex() {
   return m_;
 }
 
-ExpressionFactory& Context::getExpressionFactory() {
+Factory<Expression>& Context::getExpressionFactory() {
   return expressionFactory_;
 }
 
-AtomFactory& Context::getAtomFactory() {
+Factory<Atom>& Context::getAtomFactory() {
   return atomFactory_;
 }
 
@@ -143,7 +60,7 @@ Expression* Context::getExpression(const std::string& key) {
 }
 
 void Context::runInThread(Expression* e) {
-  ExpressionRunner* er = runnerFactory_.createRunner();
+  ExpressionRunner* er = runnerFactory_.createObject<ExpressionRunner>();
   er->setParameters(this, e);
   threads_.push_back(er);
   er->start();

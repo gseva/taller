@@ -52,7 +52,7 @@ std::deque<Argument*>& Expression::getArguments() {
 }
 
 ListAtom* Expression::createNil(Context& c) {
-  return c.getAtomFactory().createList();
+  return c.getAtomFactory().createObject<ListAtom>();
 }
 
 Expression::~Expression() {
@@ -99,7 +99,7 @@ Atom* MathExpression::eval(Context& c) {
 
   std::stringstream ss;
   ss << value;
-  NumericAtom* result = c.getAtomFactory().createNumeric();
+  NumericAtom* result = c.getAtomFactory().createObject<NumericAtom>();
   result->setValue(ss.str());
   return result;
 }
@@ -135,7 +135,7 @@ Atom* EqualExpression::eval(Context& c) {
   Atom* a = (*it)->getValue(c);
   Atom* b = (*(it + 1))->getValue(c);
   if (compare(a->getValue(), b->getValue())) {
-    NumericAtom* result = c.getAtomFactory().createNumeric();
+    NumericAtom* result = c.getAtomFactory().createObject<NumericAtom>();
     result->setValue("1");
     return result;
   } else {
