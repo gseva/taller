@@ -6,15 +6,12 @@
 
 
 class Mapper {
-
 public:
   const std::string operator() (const std::string& line);
-
 };
 
 
 class Client {
-
 Socket sock_;
 Mapper map_;
 const std::string host_, port_;
@@ -25,7 +22,6 @@ public:
   }
 
   void run();
-
 };
 
 

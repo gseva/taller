@@ -2,11 +2,15 @@
 
 #include <exception>
 #include <string>
+#include <string.h>
+#include <strings.h>
 #include <sstream>
 #include <stdexcept>
 #include <sys/types.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <netdb.h>
+#include <netinet/in.h>
 
 #include "common_socket.h"
 
@@ -96,6 +100,7 @@ void Socket::setNonBlocking(){
 
 
 int Socket::close() {
+  ::shutdown(fd_, SHUT_RDWR);
   return ::close(fd_);
 }
 

@@ -1,5 +1,7 @@
 
 #include "common_thread.h"
+#include <iostream>
+#include <limits.h>
 
 void* Thread::runner(void *data) {
   Thread* self = (Thread*) data;
@@ -8,7 +10,11 @@ void* Thread::runner(void *data) {
 }
 
 void Thread::start() {
-  pthread_create(&thread, NULL, Thread::runner, this);
+  pthread_attr_t tattr;
+  pthread_attr_init(&tattr);
+  size_t size = PTHREAD_STACK_MIN + 50 * 1024;
+  pthread_attr_setstacksize(&tattr, size);
+  pthread_create(&thread, &tattr, Thread::runner, this);
 }
 
 void Thread::join() {

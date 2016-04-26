@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <string>
 
 #include "client.h"
 
@@ -13,7 +14,6 @@ void Client::run() {
       continue;
     }
     std::string res = map_(line);
-    std::cout << "estoy por enviar " << res << std::endl;
     sock_.write(res + "\n");
   }
   sock_.write("End\n");

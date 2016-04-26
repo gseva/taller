@@ -1,6 +1,7 @@
 #ifndef __COMMON_SOCKET_H__
 #define __COMMON_SOCKET_H__
 
+#include <string>
 #include <sys/socket.h>
 
 #define NUM_CLIENTS 5
@@ -13,14 +14,13 @@
 
 
 class Socket {
-
   int fd_;
 
 public:
   Socket() {
     fd_ = socket(AF_INET, SOCK_STREAM, 0);
   }
-  Socket(int fd) : fd_(fd) {
+  explicit Socket(int fd) : fd_(fd) {
   }
 
   int connect(const std::string& hostname, const std::string& port);
@@ -38,9 +38,6 @@ public:
   int close();
 
   ~Socket();
-
-
-
 };
 
 #endif
