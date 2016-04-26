@@ -33,10 +33,11 @@ public:
   int listen();
   int bindAndListen(const std::string& port);
 
-  ~Socket() {
-    // shutdown(fd_);
-    close(fd_);
-  }
+  void setNonBlocking();
+
+  int close();
+
+  ~Socket();
 
 
 

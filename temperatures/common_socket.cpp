@@ -5,6 +5,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <netdb.h>
 
 #include "common_socket.h"
@@ -63,7 +64,6 @@ int Socket::bindAndListen(const std::string& port) {
   return listen();
 }
 
-
 int Socket::write(const std::string& s) {
   int length = s.length();
   const char* data = s.c_str();
@@ -87,5 +87,19 @@ std::string Socket::readLine() {
     output += c;
   }
   return output;
+}
+
+
+void Socket::setNonBlocking(){
+  fcntl(fd_, F_SETFL, O_NONBLOCK);
+}
+
+
+int Socket::close() {
+  return ::close(fd_);
+}
+
+Socket::~Socket() {
+  close();
 }
 
