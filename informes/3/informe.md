@@ -1,4 +1,4 @@
-% Informe del Trabajo Práctico 3
+% Informe del Trabajo Práctico 2
 % Alumno: Gavrilov Vsevolod
 % Padrón: 96252
 
